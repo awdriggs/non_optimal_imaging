@@ -3,3 +3,5 @@ This project explores how “non-optimal” digital cameras can be used to criti
 ## Cameras
 - [Single Pixel Camera](./single_pixel/README.md)
 
+## Tests and Documentation 
+- [Camera Tests](./camera_tests/README.md)
