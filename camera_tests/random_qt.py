@@ -11,10 +11,13 @@ import random
 
 picam2 = Picamera2()
 # picam2.start_preview(Preview.QTGL, x = 100, y =200, width=800, height=600, transform=Transform(hflip=1))
-picam2.start_preview(Preview.QT, x = 100, y =200, width=800, height=600, transform=Transform(hflip=1))
+# picam2.start_preview(Preview.QT, x = 100, y =200, width=800, height=600, transform=Transform(hflip=1))
 picam2.start()
 
-button = Button(14)
+print("ready!")
+
+# button = Button(14)
+button = Button(14, bounce_time=0.1)
 
 
 def capture_image():
