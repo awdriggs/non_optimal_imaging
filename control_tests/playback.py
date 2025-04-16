@@ -14,8 +14,8 @@ from pathlib import Path
 # === TFT Setup ===
 spi = board.SPI()
 cs_pin = digitalio.DigitalInOut(board.CE0)
-dc_pin = digitalio.DigitalInOut(board.D25)
-reset_pin = digitalio.DigitalInOut(board.D24)
+dc_pin = digitalio.DigitalInOut(board.D20)
+reset_pin = digitalio.DigitalInOut(board.D21)
 
 disp = st7789.ST7789(
     spi,
@@ -24,7 +24,9 @@ disp = st7789.ST7789(
     rst=reset_pin,
     width=135,
     height=240,
-    rotation=90,
+    # width=240,
+    # height=135,
+    rotation=270,
     x_offset=53,
     y_offset=40,
     baudrate=24000000
@@ -32,12 +34,16 @@ disp = st7789.ST7789(
 
 width = disp.height
 height = disp.width
+# width = disp.width
+# height = disp.height
 
 blank_image = Image.new("RGB", (width, height), color=(0, 0, 0))
 
 # === Camera Setup ===
 picam2 = Picamera2()
-preview_config = picam2.create_still_configuration(main={"size": (240, 135)})
+preview_config = picam2.create_still_configuration(main={"size": (width, height)})
+# preview_config = picam2.create_still_configuration(main={"size": (height, width)})
+# preview_config = picam2.create_still_configuration(main={"size": (135, 240)})
 capture_config = picam2.create_still_configuration(main={"size": (1024, 768)})  # or higher
 
 picam2.configure(preview_config)
@@ -45,10 +51,11 @@ picam2.start()
 time.sleep(1)
 
 # === Button Setup ===
-button = Button(14, bounce_time=0.1)
-toggle_button = Button(16, bounce_time=0.1)
-playback_button = Button(21, bounce_time=0.1)
-forward_button = Button(20, bounce_time=0.1)
+button = Button(4, bounce_time=0.1)
+toggle_button = Button(12, bounce_time=0.1) #sw1
+playback_button = Button(23, bounce_time=0.1) #center button on five d pad
+forward_button = Button(18, bounce_time=0.1) #pin 5 of five d pad
+back_button = Button(25, bounce_time=0.1) #pin 5 of five d pad
 
 camera_lock = Lock()
 
@@ -72,7 +79,7 @@ def capture_image():
 # === Display Shit === 
 display_mode = "off"
 # Backlight control
-backlight = digitalio.DigitalInOut(board.D18)
+backlight = digitalio.DigitalInOut(board.D16)
 backlight.direction = digitalio.Direction.OUTPUT
 backlight.value = False  # Backlight ON
 
@@ -116,9 +123,9 @@ def set_display_mode(mode):
     print(f"Display mode: {display_mode}")
 
 def handle_capture_button():
-    global playback_on_off
-    if playback_on_off:
-       toggle_playback() 
+    global display_mode
+    if display_mode == "playback":
+        display_mode = "preview"
     else:
         capture_image()
 
@@ -136,11 +143,18 @@ def get_images():
 
 def navigate(direction):
     global playback_index
-    if direction == "forward":
-        playback_index += 1
+    if display_mode == "playback":
+        if direction == "forward":
+            playback_index += 1
 
-        if playback_index > num_images - 1:
-            playback_index = 0
+            if playback_index > num_images - 1:
+                playback_index = 0
+
+        if direction == "back":
+            playback_index -= 1
+
+            if playback_index < 0:
+                playback_index = num_images - 1
 
         print(f"{playback_index + 1} / {num_images}")
         
@@ -152,6 +166,7 @@ button.when_pressed = handle_capture_button
 toggle_button.when_pressed = lambda: set_display_mode("preview")
 playback_button.when_pressed = lambda: set_display_mode("playback")
 forward_button.when_pressed = lambda: navigate("forward")
+back_button.when_pressed = lambda: navigate("back")
 
 pause()
 
