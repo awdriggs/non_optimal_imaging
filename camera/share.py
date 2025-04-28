@@ -3,8 +3,9 @@
 import http.server
 import socketserver
 import socket
-from pathlib import Path
 import os
+import json
+from pathlib import Path
 
 httpd = None
 
@@ -17,14 +18,37 @@ class ReusableTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
-    def translate_path(self, path):
-        # Serve images from Captures/, frontend files otherwise
-        if path.endswith('.jpg') or path.endswith('.jpeg') or path.endswith('.png'):
-            full_path = CAPTURES_DIR / path.lstrip('/')
+    def do_GET(self):
+        if self.path == "/api/images":
+            self.list_images_api()
         else:
-            full_path = FRONTEND_DIR / path.lstrip('/')
+            super().do_GET()
 
-        return str(full_path)
+    def list_images_api(self):
+        try:
+            # List all image files in /captures
+            image_files = [
+                f.name for f in CAPTURES_DIR.iterdir()
+                if f.suffix.lower() in [".jpg", ".jpeg", ".png"]
+            ]
+
+            # Sort newest first
+            image_files.sort(reverse=True)
+
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(image_files).encode())
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(str(e).encode())
+
+    def translate_path(self, path):
+        if path.startswith("/captures/"):
+            return str(CAPTURES_DIR / path[len("/captures/"):])
+        else:
+            return str(FRONTEND_DIR / path.lstrip("/"))
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -40,7 +64,7 @@ def get_ip_address():
 def start_server(port=8000):
     global httpd
 
-    os.chdir(FRONTEND_DIR)  # Set working directory to serve from frontend
+    os.chdir(FRONTEND_DIR)  # Serve from frontend
 
     handler = CustomHandler
     httpd = ReusableTCPServer(("", port), handler)

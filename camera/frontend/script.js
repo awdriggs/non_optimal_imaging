@@ -1,18 +1,10 @@
-// script.js
-
 async function loadImages() {
     try {
-        const response = await fetch(".");
-        const text = await response.text();
-
-        // Find all image links
-        const imageFilenames = [...text.matchAll(/href="captures\/(.*?\.(jpg|jpeg|png))"/gi)].map(m => m[1]);
+        const response = await fetch("/api/images");
+        const imageFilenames = await response.json();
 
         const gallery = document.getElementById("gallery");
         gallery.innerHTML = "";
-
-        // Sort newest first
-        imageFilenames.sort().reverse();
 
         for (const filename of imageFilenames) {
             const img = document.createElement("img");
@@ -28,4 +20,4 @@ async function loadImages() {
 
 // Run it!
 loadImages();
-
+setInterval(loadImages, 10000);
