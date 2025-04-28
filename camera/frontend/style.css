@@ -1,0 +1,32 @@
+body {
+    font-family: sans-serif;
+    background: #f4f4f4;
+    text-align: center;
+    margin: 0;
+}
+.logo {
+    width: 250px;
+    margin: 20px auto 10px;
+}
+h1 {
+    margin-bottom: 10px;
+}
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+}
+.gallery img {
+    width: 200px;
+    height: auto;
+    margin: 10px;
+    /* border-radius: 8px; */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+.gallery img:hover {
+    transform: scale(1.05);
+}
+
