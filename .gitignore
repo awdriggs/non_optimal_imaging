@@ -1,5 +1,6 @@
 # Don't track the photos 
 camera/frontend/captures/
+camera/frontend/fullres/
 utils/capture_tests/
 
 # Ignore temporary files
