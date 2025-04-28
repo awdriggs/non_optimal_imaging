@@ -1,34 +1,31 @@
+// script.js
+
 async function loadImages() {
     try {
-        const response = await fetch('/images/');
-        const imageFilenames = await response.json();
+        const response = await fetch(".");
+        const text = await response.text();
 
-        imageFilenames.reverse(); // Newest first
+        // Find all image links
+        const imageFilenames = [...text.matchAll(/href="captures\/(.*?\.(jpg|jpeg|png))"/gi)].map(m => m[1]);
 
-        const gallery = document.getElementById('gallery');
-        gallery.innerHTML = '';
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = "";
 
-        if (imageFilenames.length === 0) {
-            // No images found
-            const noImagesText = document.createElement('h2');
-            noImagesText.textContent = "No Captures Yet";
-            noImagesText.style.marginTop = "50px";
-            gallery.appendChild(noImagesText);
-            return;
-        }
+        // Sort newest first
+        imageFilenames.sort().reverse();
 
-        imageFilenames.forEach(filename => {
-            const img = document.createElement('img');
-            img.src = '/Captures/' + filename;  // IMPORTANT: Prefix with Captures
+        for (const filename of imageFilenames) {
+            const img = document.createElement("img");
+            img.src = `captures/${filename}`;
             img.alt = filename;
-            img.onclick = () => window.open('/captures/' + filename, '_blank');
+            img.className = "thumbnail";
             gallery.appendChild(img);
-        });
-    } catch (err) {
-        console.error('Error loading images', err);
+        }
+    } catch (error) {
+        console.error("Failed to load images:", error);
     }
 }
 
+// Run it!
 loadImages();
-setInterval(loadImages, 10000);
 

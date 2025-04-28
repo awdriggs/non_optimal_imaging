@@ -1,39 +1,30 @@
+# share.py
+
 import http.server
 import socketserver
-import os
 import socket
-import json
+from pathlib import Path
+import os
 
 httpd = None
 
 # === Base directories ===
-BASE_DIR = '/home/awdriggs/frontend'
-CAPTURES_DIR = '/home/awdriggs/frontend/captures'
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+CAPTURES_DIR = FRONTEND_DIR / "captures"
 
 class ReusableTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
-        if path.startswith('/Captures/'):
-            # Serve images from Captures folder
-            return os.path.join(CAPTURES_DIR, path[len('/Captures/'):])
+        # Serve images from Captures/, frontend files otherwise
+        if path.endswith('.jpg') or path.endswith('.jpeg') or path.endswith('.png'):
+            full_path = CAPTURES_DIR / path.lstrip('/')
         else:
-            # Serve frontend files normally
-            return os.path.join(BASE_DIR, path.lstrip('/'))
+            full_path = FRONTEND_DIR / path.lstrip('/')
 
-    def do_GET(self):
-        if self.path == '/images/':
-            # Return JSON list of images from Captures
-            image_list = [f for f in os.listdir(CAPTURES_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
-            image_list.sort()
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(image_list).encode())
-        else:
-            # Default serving
-            super().do_GET()
+        return str(full_path)
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -48,10 +39,13 @@ def get_ip_address():
 
 def start_server(port=8000):
     global httpd
-    os.chdir(BASE_DIR)  # Serve from /frontend by default
+
+    os.chdir(FRONTEND_DIR)  # Set working directory to serve from frontend
+
     handler = CustomHandler
     httpd = ReusableTCPServer(("", port), handler)
-    print(f"Serving at http://{get_ip_address()}:{port}")
+
+    print(f"🌐 Serving at http://{get_ip_address()}:{port}")
     httpd.serve_forever()
 
 def stop_server():
@@ -59,5 +53,5 @@ def stop_server():
     if httpd:
         httpd.shutdown()
         httpd = None
-        print("Server stopped.")
+        print("🛑 Server stopped.")
 
