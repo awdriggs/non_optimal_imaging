@@ -11,7 +11,13 @@ async function loadImages() {
             img.src = `captures/${filename}`;
             img.alt = filename;
             img.className = "thumbnail";
-            gallery.appendChild(img);
+
+            const link = document.createElement("a");
+            link.href = `captures/${filename}`;
+            // link.target = "_blank";  // Open in a new tab
+            link.appendChild(img);
+
+            gallery.appendChild(link);
         }
     } catch (error) {
         console.error("Failed to load images:", error);
@@ -21,3 +27,4 @@ async function loadImages() {
 // Run it!
 loadImages();
 setInterval(loadImages, 10000);
+
