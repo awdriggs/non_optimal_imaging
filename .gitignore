@@ -1,5 +1,6 @@
 # Don't track the photos 
 camera/frontend/captures/
+utils/capture_tests/
 
 # Ignore temporary files
 *.pyc
