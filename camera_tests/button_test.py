@@ -2,7 +2,7 @@ from gpiozero import Button
 from signal import pause
 
 # button = Button(17, bounce_time=0.1)
-button = Button(4, bounce_time=0.1)
+button = Button(26, bounce_time=0.1)
 # button = Button(14)
 
 def pushed():
