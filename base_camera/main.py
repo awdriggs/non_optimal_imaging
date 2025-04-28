@@ -94,7 +94,7 @@ def capture_image():
     get_images()
 
 def set_display_mode(mode):
-    global display_mode, previous_display_mode
+    global display_mode, previous_display_mode, confirm_delete
     if mode == "playback":
         previous_display_mode = display_mode
 
@@ -102,6 +102,10 @@ def set_display_mode(mode):
         display_mode = "off"
     else:
         display_mode = mode
+
+    #If leaving playback mode, clear any delete confirmation
+    if display_mode != "playback":
+        confirm_delete = False
 
     display.set_backlight(display_mode != "off")
     print(f"Display mode: {display_mode}")
@@ -119,11 +123,19 @@ def delete_current_image():
     if image_path and image_path.exists():
         print(f"🗑 Deleting {image_path}")
         image_path.unlink()  # delete file
+
+        # Capture current index before refreshing list
+        old_index = playback_index
+
         get_images()  # refresh image list
 
-        if playback_index >= len(image_list):
-            playback_index = max(0, len(image_list) - 1)
-
+        # Now carefully update playback_index:
+        if len(image_list) == 0:
+            playback_index = 0
+        elif old_index >= len(image_list):
+            playback_index = len(image_list) - 1
+        else:
+            playback_index = old_index
 
 def handle_share():
     global sharing_active
@@ -196,17 +208,21 @@ def update_display_loop():
             display.show_image(image)
 
         elif display_mode == "playback":
-            image_path = get_current_image()
-            if image_path:
-                image = Image.open(image_path)
-            else:
-                image = Image.open("/home/awdriggs/frontend/no-images.jpg")     
-
-            # If delete confirmation is active, show overlay
             if confirm_delete:
-                display.show_image(image, overlay_text="Delete? UP=Yes DOWN=No")
+                image = Image.open("/home/awdriggs/frontend/screens/delete.jpg")     
             else:
-                display.show_image(image)
+                image_path = get_current_image()
+                if image_path:
+                    image = Image.open(image_path)
+                else:
+                    image = Image.open("/home/awdriggs/frontend/screens/no-images.jpg")     
+
+            display.show_image(image)
+
+            # saving this for now as an example of how to use the overlays. 
+            # if confirm_delete:
+            #     display.show_image(image, overlay_text="Delete? UP=Yes DOWN=No")
+            # else:
 
         else:
             display.clear()
