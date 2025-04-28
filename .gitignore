@@ -1,0 +1,11 @@
+# Don't track the photos 
+camera/frontend/captures/
+
+# Ignore temporary files
+*.pyc
+__pycache__/
+
+# Optional: ignore logs or temp files if you create them later
+*.log
+*.tmp
+
