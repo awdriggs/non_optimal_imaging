@@ -1,8 +1,10 @@
-# capture.py
 from PIL import Image
 import numpy as np
 from pathlib import Path
 import time
+from camera import CameraController
+from gpiozero import PWMLED
+from leds import status_led
 
 SAVE_FULLRES = True  # Only saves fullres image if True
 
@@ -10,6 +12,9 @@ def capture_image(camera, camera_lock):
     print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
+
+        status_led.value = 0.2  # set brightness
+        status_led.blink(on_time=0.2, off_time=0.2)
         # === Prepare save folders
         base_dir = Path(__file__).resolve().parent
         frontend_dir = base_dir / "frontend"
@@ -53,7 +58,9 @@ def capture_image(camera, camera_lock):
         solid_color.save(avgcolor_path)
 
         print(f"✅ Average color saved to {avgcolor_path}")
+        status_led.off()
 
         # === Restart Preview
         camera.start_preview()
+
 
