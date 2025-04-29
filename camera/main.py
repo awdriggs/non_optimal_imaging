@@ -43,7 +43,7 @@ status_led.blink(on_time=0.25, off_time=0.25)  # Start blinking immediately
 share_led.off()  # Make sure it's OFF initially
 
 # === Initialize components ===
-camera = CameraController(camera_name="no00")
+camera = CameraController()
 display = DisplayController()
 
 # === Button Setup ===

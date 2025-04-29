@@ -8,11 +8,31 @@ from leds import status_led
 
 SAVE_FULLRES = True  # Only saves fullres image if True
 
+CAMERA_NAME = "no01"
+
+def generate_capture_filename(camera_name):
+    """Generate a sequential filename like 'no00-0001.jpg'."""
+    captures_dir = Path(__file__).resolve().parent / "frontend" / "captures"
+    captures_dir.mkdir(parents=True, exist_ok=True)  # Ensure folder exists
+
+    existing_files = list(captures_dir.glob(f"{camera_name}-*.jpg"))
+
+    if not existing_files:
+        next_num = 1
+    else:
+        numbers = [
+            int(f.stem.split("-")[-1])
+            for f in existing_files if f.stem.startswith(camera_name)
+        ]
+        next_num = max(numbers) + 1
+
+    filename = f"{camera_name}-{next_num:04d}.jpg"
+    return filename
+
 def capture_image(camera, camera_lock):
     print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
-
         status_led.value = 0.2  # set brightness
         status_led.blink(on_time=0.2, off_time=0.2)
         # === Prepare save folders
@@ -25,7 +45,7 @@ def capture_image(camera, camera_lock):
         captures_dir.mkdir(parents=True, exist_ok=True)
 
         # === Get base filename
-        filename = camera.generate_capture_filename()
+        filename = generate_capture_filename(CAMERA_NAME)
 
         fullres_filename = f"fullres-{filename}"
         avgcolor_filename = filename
