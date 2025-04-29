@@ -12,6 +12,7 @@ from display import DisplayController
 from share import start_server, stop_server
 import pathlib
 from capture import capture_image
+from leds import status_led, share_led
 
 # === Base Paths ===
 BASE_DIR = pathlib.Path(__file__).resolve().parent
@@ -36,11 +37,9 @@ sharing_active = False
 confirm_delete = False
 
 # === Yellow LED Setup ===
-yellow_led = LED(13)
-yellow_led.blink(on_time=0.25, off_time=0.25)  # Start blinking immediately
+status_led.blink(on_time=0.25, off_time=0.25)  # Start blinking immediately
 
 # === Green LED Setup (Sharing Indicator) ===
-share_led = LED(19)
 share_led.off()  # Make sure it's OFF initially
 
 # === Initialize components ===
@@ -242,7 +241,7 @@ def update_display_loop():
 
 # === Start Everything ===
 camera.start_preview()
-yellow_led.off()
+status_led.off()
 
 threading.Thread(target=update_display_loop, daemon=True).start()
 
