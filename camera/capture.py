@@ -11,6 +11,27 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
+CAMERA_NAME = "no00"
+
+def generate_capture_filename(camera_name):
+    """Generate a sequential filename like 'no00-0001.jpg'."""
+    captures_dir = Path(__file__).resolve().parent / "frontend" / "captures"
+    captures_dir.mkdir(parents=True, exist_ok=True)  # Ensure folder exists
+
+    existing_files = list(captures_dir.glob(f"{camera_name}-*.jpg"))
+
+    if not existing_files:
+        next_num = 1
+    else:
+        numbers = [
+            int(f.stem.split("-")[-1])
+            for f in existing_files if f.stem.startswith(camera_name)
+        ]
+        next_num = max(numbers) + 1
+
+    filename = f"{camera_name}-{next_num:04d}.jpg"
+    return filename
+
 def capture_image(camera, camera_lock):
     """Capture a full-res image and save to Captures folder."""
     status_led.value = 0.2  # set brightness
@@ -18,7 +39,7 @@ def capture_image(camera, camera_lock):
 
     with camera_lock:
         print("📸 Capturing full-res image...")
-        filename = camera.generate_capture_filename()
+        filename = generate_capture_filename(CAMERA_NAME)
         save_path = CAPTURES_DIR / filename
 
         # Get image from camera
