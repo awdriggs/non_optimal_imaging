@@ -6,7 +6,7 @@ from picamera2 import Picamera2
 import time
 
 class CameraController:
-    def __init__(self, camera_name="no00", preview_size=(240, 135), capture_size=(1024, 768)):
+    def __init__(self, camera_name="no00", preview_size=(240, 135), capture_size=(4608, 2592)):
         self.camera_name = camera_name
         self.picam2 = Picamera2()
         self.preview_config = self.picam2.create_still_configuration(main={"size": preview_size})
