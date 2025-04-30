@@ -11,7 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-CAMERA_NAME = "no00"
+SAVE_FULLRES = True  # Only saves fullres image if True
+
+CAMERA_NAME = "no02"
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -33,20 +35,56 @@ def generate_capture_filename(camera_name):
     return filename
 
 def capture_image(camera, camera_lock):
-    """Capture a full-res image and save to Captures folder."""
-    status_led.value = 0.2  # set brightness
-    status_led.blink(on_time=0.2, off_time=0.2)
+    print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
-        print("📸 Capturing full-res image...")
-        filename = generate_capture_filename(CAMERA_NAME)
-        save_path = CAPTURES_DIR / filename
+        status_led.value = 0.2  # set brightness
+        status_led.blink(on_time=0.2, off_time=0.2)
 
-        # Get image from camera
-        array = camera.capture_image_array()
-        image = Image.fromarray(array)
-        image.save(save_path)
-        # camera.capture_and_save_image(save_path)
-        print(f"✅ Saved: {save_path}")
+        # === Prepare save folders
+        base_dir = Path(__file__).resolve().parent
+        frontend_dir = base_dir / "frontend"
+        fullres_dir = frontend_dir / "fullres"
+        captures_dir = frontend_dir / "captures"
+
+        fullres_dir.mkdir(parents=True, exist_ok=True)
+        captures_dir.mkdir(parents=True, exist_ok=True)
+
+        # === Get base filename
+        filename = generate_capture_filename(CAMERA_NAME)
+
+        fullres_filename = f"fullres-{filename}"
+        avgcolor_filename = filename
+
+        fullres_path = fullres_dir / fullres_filename
+        avgcolor_path = captures_dir / avgcolor_filename
+
+        # === Always capture ONE fullres frame
+        camera.picam2.stop()
+        camera.picam2.configure(camera.capture_config)
+        camera.picam2.start()
+        time.sleep(0.5)
+
+        frame_fullres = camera.picam2.capture_array("main")
+
+        # === Save Fullres if enabled
+        if SAVE_FULLRES:
+            Image.fromarray(frame_fullres).save(fullres_path)
+            print(f"✅ Fullres saved to {fullres_path}")
+        else:
+            print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
+
+        # === Save Average Color (always fullres size)
+        average_color = np.mean(frame_fullres, axis=(0, 1)).astype(int)
+        r, g, b = average_color
+        print(f"🎨 Average Color: R={r} G={g} B={b}")
+
+        width, height = frame_fullres.shape[1], frame_fullres.shape[0]
+        solid_color = Image.new("RGB", (width, height), color=(r, g, b))
+        solid_color.save(avgcolor_path)
+
+        print(f"✅ Average color saved to {avgcolor_path}")
         status_led.off()
 
+        # === Restart Preview
+        camera.start_preview()
