@@ -2,9 +2,13 @@
 from PIL import Image
 import numpy as np
 from pathlib import Path
+import time
 from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
+
+#camera specific libs
+import random
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -54,10 +58,9 @@ def capture_image(camera, camera_lock):
         filename = generate_capture_filename(CAMERA_NAME)
 
         fullres_filename = f"fullres-{filename}"
-        avgcolor_filename = filename
 
         fullres_path = fullres_dir / fullres_filename
-        avgcolor_path = captures_dir / avgcolor_filename
+        save_path = captures_dir / filename 
 
         # === Always capture ONE fullres frame
         camera.picam2.stop()
@@ -65,26 +68,25 @@ def capture_image(camera, camera_lock):
         camera.picam2.start()
         time.sleep(0.5)
 
-        frame_fullres = camera.picam2.capture_array("main")
+        # Get image from camera
+        array = camera.capture_image_array()
 
         # === Save Fullres if enabled
         if SAVE_FULLRES:
-            Image.fromarray(frame_fullres).save(fullres_path)
+            Image.fromarray(array).save(fullres_path)
             print(f"✅ Fullres saved to {fullres_path}")
         else:
             print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
 
-        # === Save Average Color (always fullres size)
-        average_color = np.mean(frame_fullres, axis=(0, 1)).astype(int)
-        r, g, b = average_color
-        print(f"🎨 Average Color: R={r} G={g} B={b}")
+        # Get random JPEG quality between 1 and 20
+        jpeg_quality = random.randint(1, 5)
+        print(f"🧪 JPEG Quality selected: {jpeg_quality}")
 
-        width, height = frame_fullres.shape[1], frame_fullres.shape[0]
-        solid_color = Image.new("RGB", (width, height), color=(r, g, b))
-        solid_color.save(avgcolor_path)
+        image = Image.fromarray(array)
+        image.save(save_path, format="JPEG", quality=jpeg_quality)
 
-        print(f"✅ Average color saved to {avgcolor_path}")
+        print(f"✅ Saved: {save_path}")
         status_led.off()
 
         # === Restart Preview
-        camera.start_preview()
+        # camera.start_preview()
