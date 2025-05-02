@@ -2,16 +2,23 @@
 from PIL import Image
 import numpy as np
 from pathlib import Path
+import time
 from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
+
+#camera specific libs
+import random
+import copy
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-CAMERA_NAME = "no00"
+SAVE_FULLRES = True  # Only saves fullres image if True
+
+CAMERA_NAME = "no03"
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -33,22 +40,58 @@ def generate_capture_filename(camera_name):
     return filename
 
 def capture_image(camera, camera_lock):
-    """Capture a full-res image and save to Captures folder."""
-    status_led.value = 0.2  # set brightness
-    status_led.blink(on_time=0.2, off_time=0.2)
+    print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
-        print("📸 Capturing full-res image...")
+        status_led.value = 0.2  # set brightness
+        status_led.blink(on_time=0.2, off_time=0.2)
+
+        # === Prepare save folders
+        base_dir = Path(__file__).resolve().parent
+        frontend_dir = base_dir / "frontend"
+        fullres_dir = frontend_dir / "fullres"
+        captures_dir = frontend_dir / "captures"
+
+        fullres_dir.mkdir(parents=True, exist_ok=True)
+        captures_dir.mkdir(parents=True, exist_ok=True)
+
+        # === Get base filename
         filename = generate_capture_filename(CAMERA_NAME)
-        save_path = CAPTURES_DIR / filename
+
+        fullres_filename = f"fullres-{filename}"
+
+        fullres_path = fullres_dir / fullres_filename
+        save_path = captures_dir / filename 
+
+
+        UPSCALED_SIZE = camera.capture_config["main"]["size"]
+        # === Always capture ONE fullres frame
+        camera.picam2.stop()
+        camera.picam2.configure(camera.capture_config)
+        camera.picam2.start()
+        time.sleep(0.5)
 
         # Get image from camera
         array = camera.capture_image_array()
+
+        # === Save Fullres if enabled
+        if SAVE_FULLRES:
+            Image.fromarray(array).save(fullres_path)
+            print(f"✅ Fullres saved to {fullres_path}")
+        else:
+            print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
+
+        # rescale code goes here...
         image = Image.fromarray(array)
-        image.save(save_path)
-        # camera.capture_and_save_image(save_path)
-        print(f"✅ Saved: {save_path}")
+
+        # downscaled = image.resize((6, 2), Image.BOX)
+        # downscaled = image.resize((6, 2), Image.NEAREST)
+        downscaled = image.resize((6, 2), Image.LANCZOS)
+
+        # upscaled = image.resize(UPSCALED_SIZE, resample=Image.NEAREST)
+        # upscaled = image.resize(UPSCALED_SIZE, resample=Image.BILINEAR)
+        upscaled = downscaled.resize(UPSCALED_SIZE, resample=Image.BICUBIC)
+        upscaled.save(save_path)
+        print(f"✅ Low-res upscaled saved to {save_path}")
+
         status_led.off()
-
-
- 
