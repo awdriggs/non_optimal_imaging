@@ -81,17 +81,39 @@ def capture_image(camera, camera_lock):
         else:
             print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
 
+
+        # original
         # rescale code goes here...
         image = Image.fromarray(array)
 
-        # downscaled = image.resize((6, 2), Image.BOX)
-        # downscaled = image.resize((6, 2), Image.NEAREST)
-        downscaled = image.resize((6, 2), Image.LANCZOS)
-
-        # upscaled = image.resize(UPSCALED_SIZE, resample=Image.NEAREST)
-        # upscaled = image.resize(UPSCALED_SIZE, resample=Image.BILINEAR)
+        downscaled = image.resize((6, 4), Image.NEAREST) #1.5 ratio
+        # also try 10 and 6, 1.6 ratio
         upscaled = downscaled.resize(UPSCALED_SIZE, resample=Image.BICUBIC)
         upscaled.save(save_path)
         print(f"✅ Low-res upscaled saved to {save_path}")
+
+        ## test output all sampling algorithm combinations
+        ## Downsample to 6×2 (low-res)
+        # down_size = (6, 2)
+
+        # # Get original size before any downsampling
+        # original_size = UPSCALED_SIZE
+
+        # # All available filters
+        # filters = {
+        #     "NEAREST": Image.NEAREST,
+        #     "BOX": Image.BOX,
+        #     "BILINEAR": Image.BILINEAR,
+        #     "HAMMING": Image.HAMMING,
+        #     "BICUBIC": Image.BICUBIC,
+        #     "LANCZOS": Image.LANCZOS,
+        # }
+
+        # # Apply all combinations
+        # for down_name, down_filter in filters.items():
+        #     for up_name, up_filter in filters.items():
+        #         downscaled = image.resize(down_size, resample=down_filter)
+        #         upscaled = downscaled.resize(original_size, resample=up_filter)
+        #         upscaled.save(CAPTURES_DIR / f"{CAMERA_NAME}-{down_name}_{up_name}.jpg")
 
         status_led.off()
