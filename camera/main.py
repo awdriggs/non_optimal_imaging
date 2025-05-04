@@ -2,7 +2,7 @@ import threading
 import time
 import digitalio
 import board
-from threading import Lock
+from threading import Lock, Timer #needed for no04
 from signal import pause
 from pathlib import Path
 from PIL import Image
@@ -36,6 +36,14 @@ camera_ready = threading.Event()
 sharing_active = False
 confirm_delete = False
 
+# no04 specific
+led_timeout = 0.8
+shake_window = 0.2
+led_timer = None
+shake_active = False
+shake_timer = None
+button_ready = True
+
 # === Yellow LED Setup ===
 status_led.blink(on_time=0.25, off_time=0.25)  # Start blinking immediately
 
@@ -56,6 +64,9 @@ share_button = Button(26, bounce_time=0.1)
 up_button = Button(1, bounce_time=0.1)
 down_button = Button(24, bounce_time=0.1)
 
+# no04 specific
+shake_one = Button(27)
+shake_two = Button(22)
 
 # === Helper Functions ===
 def get_images():
@@ -191,13 +202,46 @@ def handle_down():
         confirm_delete = False
         print("🟡 Delete cancelled")
 
-
 def handle_capture():
+    global button_ready #no04 necessary
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
     else:
-        capture_image(camera, camera_lock)
-        get_images()
+        if button_ready and shake_active:
+            # no04 triggers when shaked and button pressed 
+            button_ready = False
+            capture_image(camera, camera_lock)
+            get_images()
+
+# n004 specific
+def handle_shake():
+    global shake_active, shake_timer
+    shake_active = True
+
+    print("shake")
+
+    status_led.on() #indicates a shake to the user
+    if shake_timer:
+        shake_timer.cancel() #this cancels a shake_timer if one is already running
+    shake_timer = Timer(shake_window, reset_shake) #shakes are fleeting, this makes them linger some
+    shake_timer.start() #start the shake timer
+
+    global led_timer
+    if led_timer:
+        led_timer.cancel() #this cancles a led timer if one is already running
+    # led_timer = Timer(led_timeout, turn_off_led) 
+    led_timer = Timer(led_timeout, lambda: (status_led.off())) #setup a new timer, kill the light when done
+    led_timer.start() #start the led timer
+
+def reset_shake(): #gets called when shake_timer expires
+    global shake_active
+    shake_active = False
+
+def reset_button():
+    global button_ready
+    button_ready = True
+
+# button handler assignments
 
 capture_button.when_pressed = handle_capture
 preview_button.when_pressed = lambda: set_display_mode("preview")
@@ -207,6 +251,11 @@ back_button.when_pressed = lambda: navigate_playback("back")
 share_button.when_pressed = handle_share
 up_button.when_pressed = handle_up
 down_button.when_pressed = handle_down
+
+# no04 extras
+shake_one.when_pressed = handle_shake
+shake_two.when_pressed = handle_shake 
+capture_button.when_released = reset_button
 
 # === Display Update Loop ===
 def update_display_loop():
