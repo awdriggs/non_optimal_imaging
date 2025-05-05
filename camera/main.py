@@ -56,6 +56,15 @@ share_button = Button(26, bounce_time=0.1)
 up_button = Button(1, bounce_time=0.1)
 down_button = Button(24, bounce_time=0.1)
 
+# no05 specific
+from average import (
+    initialize_composite_state,
+    update_composite_state,
+    composite_to_image,
+)
+
+composite = initialize_composite_state(height, width)
+
 
 # === Helper Functions ===
 def get_images():
