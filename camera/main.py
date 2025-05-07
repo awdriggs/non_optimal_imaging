@@ -11,7 +11,8 @@ from camera import CameraController
 from display import DisplayController
 from share import start_server, stop_server
 import pathlib
-from capture import capture_image
+# from capture import capture_image
+from capture import save_composite #no05 
 from leds import status_led, share_led
 
 # === Base Paths ===
@@ -63,8 +64,11 @@ from average import (
     composite_to_image,
 )
 
+# height = 1080 
+# width = 1920
+height = 360 
+width = 640 
 composite = initialize_composite_state(height, width)
-
 
 # === Helper Functions ===
 def get_images():
@@ -202,10 +206,14 @@ def handle_down():
 
 
 def handle_capture():
+    global composite 
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
     else:
-        capture_image(camera, camera_lock)
+        # capture_image(camera, camera_lock)
+        image = Image.fromarray(composite_to_image(composite), 'RGB')
+        save_composite(image, camera_lock)
+        composite = initialize_composite_state(height, width)
         get_images()
 
 capture_button.when_pressed = handle_capture
@@ -219,10 +227,13 @@ down_button.when_pressed = handle_down
 
 # === Display Update Loop ===
 def update_display_loop():
+    global composite
     while True:
+        with camera_lock: #make a frame
+            frame = camera.get_frame()
+            update_composite_state(composite, frame) #update the composite image
+
         if display_mode == "preview":
-            with camera_lock:
-                frame = camera.get_frame()
             image = Image.fromarray(frame, 'RGB')
             display.show_image(image)
 
@@ -245,6 +256,9 @@ def update_display_loop():
 
         else:
             display.clear()
+
+
+        # update
 
         time.sleep(0.03)
 

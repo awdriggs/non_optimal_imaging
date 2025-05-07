@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-CAMERA_NAME = "no00"
+CAMERA_NAME = "no05" #continuous camera
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -32,7 +32,26 @@ def generate_capture_filename(camera_name):
     filename = f"{camera_name}-{next_num:04d}.jpg"
     return filename
 
-def capture_image(camera, camera_lock):
+# def capture_image(camera, camera_lock):
+#     """Capture a full-res image and save to Captures folder."""
+#     status_led.value = 0.2  # set brightness
+#     status_led.blink(on_time=0.2, off_time=0.2)
+
+#     with camera_lock:
+#         print("📸 Capturing full-res image...")
+#         filename = generate_capture_filename(CAMERA_NAME)
+#         save_path = CAPTURES_DIR / filename
+
+#         # Get image from camera
+#         array = camera.capture_image_array()
+#         image = Image.fromarray(array)
+#         image.save(save_path)
+#         # camera.capture_and_save_image(save_path)
+#         print(f"✅ Saved: {save_path}")
+#         status_led.off()
+
+
+def save_composite(composite, camera_lock):
     """Capture a full-res image and save to Captures folder."""
     status_led.value = 0.2  # set brightness
     status_led.blink(on_time=0.2, off_time=0.2)
@@ -42,13 +61,10 @@ def capture_image(camera, camera_lock):
         filename = generate_capture_filename(CAMERA_NAME)
         save_path = CAPTURES_DIR / filename
 
-        # Get image from camera
-        array = camera.capture_image_array()
-        image = Image.fromarray(array)
-        image.save(save_path)
+        # image.save(composite)
+        composite.save(save_path)
         # camera.capture_and_save_image(save_path)
         print(f"✅ Saved: {save_path}")
         status_led.off()
-
 
  
