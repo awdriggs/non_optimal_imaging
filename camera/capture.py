@@ -18,7 +18,7 @@ CAPTURES_DIR = FRONTEND_DIR / "captures"
 
 SAVE_FULLRES = True  # Only saves fullres image if True
 
-CAMERA_NAME = "no03"
+CAMERA_NAME = "no06"
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -40,80 +40,19 @@ def generate_capture_filename(camera_name):
     return filename
 
 def capture_image(camera, camera_lock):
-    print("📸 Capturing Fullres and Average Color...")
+    """Capture a full-res image and save to Captures folder."""
+    status_led.value = 0.2  # set brightness
+    status_led.blink(on_time=0.2, off_time=0.2)
 
     with camera_lock:
-        status_led.value = 0.2  # set brightness
-        status_led.blink(on_time=0.2, off_time=0.2)
-
-        # === Prepare save folders
-        base_dir = Path(__file__).resolve().parent
-        frontend_dir = base_dir / "frontend"
-        fullres_dir = frontend_dir / "fullres"
-        captures_dir = frontend_dir / "captures"
-
-        fullres_dir.mkdir(parents=True, exist_ok=True)
-        captures_dir.mkdir(parents=True, exist_ok=True)
-
-        # === Get base filename
+        print("📸 Capturing full-res image...")
         filename = generate_capture_filename(CAMERA_NAME)
-
-        fullres_filename = f"fullres-{filename}"
-
-        fullres_path = fullres_dir / fullres_filename
-        save_path = captures_dir / filename 
-
-
-        UPSCALED_SIZE = camera.capture_config["main"]["size"]
-        # === Always capture ONE fullres frame
-        camera.picam2.stop()
-        camera.picam2.configure(camera.capture_config)
-        camera.picam2.start()
-        time.sleep(0.5)
+        save_path = CAPTURES_DIR / filename
 
         # Get image from camera
         array = camera.capture_image_array()
-
-        # === Save Fullres if enabled
-        if SAVE_FULLRES:
-            Image.fromarray(array).save(fullres_path)
-            print(f"✅ Fullres saved to {fullres_path}")
-        else:
-            print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
-
-
-        # original
-        # rescale code goes here...
         image = Image.fromarray(array)
-
-        downscaled = image.resize((6, 4), Image.NEAREST) #1.5 ratio
-        # also try 10 and 6, 1.6 ratio
-        upscaled = downscaled.resize(UPSCALED_SIZE, resample=Image.BICUBIC)
-        upscaled.save(save_path)
-        print(f"✅ Low-res upscaled saved to {save_path}")
-
-        ## test output all sampling algorithm combinations
-        ## Downsample to 6×2 (low-res)
-        # down_size = (6, 2)
-
-        # # Get original size before any downsampling
-        # original_size = UPSCALED_SIZE
-
-        # # All available filters
-        # filters = {
-        #     "NEAREST": Image.NEAREST,
-        #     "BOX": Image.BOX,
-        #     "BILINEAR": Image.BILINEAR,
-        #     "HAMMING": Image.HAMMING,
-        #     "BICUBIC": Image.BICUBIC,
-        #     "LANCZOS": Image.LANCZOS,
-        # }
-
-        # # Apply all combinations
-        # for down_name, down_filter in filters.items():
-        #     for up_name, up_filter in filters.items():
-        #         downscaled = image.resize(down_size, resample=down_filter)
-        #         upscaled = downscaled.resize(original_size, resample=up_filter)
-        #         upscaled.save(CAPTURES_DIR / f"{CAMERA_NAME}-{down_name}_{up_name}.jpg")
-
+        image.save(save_path)
+        # camera.capture_and_save_image(save_path)
+        print(f"✅ Saved: {save_path}")
         status_led.off()

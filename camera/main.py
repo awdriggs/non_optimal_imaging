@@ -36,6 +36,11 @@ camera_ready = threading.Event()
 sharing_active = False
 confirm_delete = False
 
+
+# no06 specific variables
+# button_ready = False 
+tilted = False
+
 # === Yellow LED Setup ===
 status_led.blink(on_time=0.25, off_time=0.25)  # Start blinking immediately
 
@@ -56,6 +61,9 @@ share_button = Button(26, bounce_time=0.1)
 up_button = Button(1, bounce_time=0.1)
 down_button = Button(24, bounce_time=0.1)
 
+# no06 specific pin assignments
+tilt_1 = Button(17, pull_up=True)
+tilt_2 = Button(27, pull_up=True)
 
 # === Helper Functions ===
 def get_images():
@@ -193,11 +201,30 @@ def handle_down():
 
 
 def handle_capture():
+    global tilted
+
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
     else:
-        capture_image(camera, camera_lock)
-        get_images()
+        # test to see the status of tilt here 
+        if tilted == True:
+            print("tilted!")
+            capture_image(camera, camera_lock)
+            get_images()
+
+def handle_tilt():
+    global tilted
+    # if both sensors are tilted, 
+        # change tilted to true
+        # turn status led to on
+    if tilt_1.is_pressed and tilt_2.is_pressed:
+        tilted = True;
+        status_led.on()
+    else:
+        tilted = False;
+        status_led.off()
+
+    # else changed titled to false
 
 capture_button.when_pressed = handle_capture
 preview_button.when_pressed = lambda: set_display_mode("preview")
@@ -207,6 +234,10 @@ back_button.when_pressed = lambda: navigate_playback("back")
 share_button.when_pressed = handle_share
 up_button.when_pressed = handle_up
 down_button.when_pressed = handle_down
+
+# no06 button handler assignmetns
+tilt_1.when_pressed = handle_tilt
+tilt_2.when_pressed = handle_tilt
 
 # === Display Update Loop ===
 def update_display_loop():
