@@ -13,6 +13,7 @@ from share import start_server, stop_server
 import pathlib
 from capture import capture_image
 from leds import status_led, share_led
+from degrader import Degrader 
 
 # === Base Paths ===
 BASE_DIR = pathlib.Path(__file__).resolve().parent
@@ -46,6 +47,17 @@ share_led.off()  # Make sure it's OFF initially
 camera = CameraController()
 display = DisplayController()
 
+# no07 specific
+image_timestamps = {}
+
+degrader = Degrader(
+    directory=CAPTURES_DIR,
+    image_timestamps=image_timestamps,
+    time_limit=10,
+    pixels_per_drop=1000,
+    interval=1
+)
+
 # === Button Setup ===
 capture_button = Button(4, bounce_time=0.1)
 preview_button = Button(12, bounce_time=0.1)
@@ -55,7 +67,6 @@ back_button = Button(25, bounce_time=0.1)
 share_button = Button(26, bounce_time=0.1)
 up_button = Button(1, bounce_time=0.1)
 down_button = Button(24, bounce_time=0.1)
-
 
 # === Helper Functions ===
 def get_images():
@@ -132,6 +143,7 @@ def delete_current_image():
     if image_path and image_path.exists():
         print(f"🗑 Deleting {image_path}")
         image_path.unlink()  # delete file
+        image_timestamps.pop(image_path.name, None)
 
         # Capture current index before refreshing list
         old_index = playback_index
@@ -198,6 +210,9 @@ def handle_capture():
     else:
         capture_image(camera, camera_lock)
         get_images()
+        if image_list:
+            newest = image_list[-1]
+            image_timestamps[newest] = time.time()
 
 capture_button.when_pressed = handle_capture
 preview_button.when_pressed = lambda: set_display_mode("preview")
@@ -224,6 +239,9 @@ def update_display_loop():
                 image_path = get_current_image()
                 if image_path:
                     image = Image.open(image_path)
+
+                    #no07, update the timestamp
+                    image_timestamps[image_path.name] = time.time()
                 else:
                     image = Image.open(NO_IMAGES_FILE)     
 
@@ -242,6 +260,8 @@ def update_display_loop():
 # === Start Everything ===
 camera.start_preview()
 status_led.off()
+degrader.start() #no07 specific
+
 
 threading.Thread(target=update_display_loop, daemon=True).start()
 
