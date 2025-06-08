@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-CAMERA_NAME = "no00"
+CAMERA_NAME = "no07"
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -19,6 +19,7 @@ def generate_capture_filename(camera_name):
     captures_dir.mkdir(parents=True, exist_ok=True)  # Ensure folder exists
 
     existing_files = list(captures_dir.glob(f"{camera_name}-*.jpg"))
+     
 
     if not existing_files:
         next_num = 1

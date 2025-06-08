@@ -158,6 +158,11 @@ def delete_current_image():
         else:
             playback_index = old_index
 
+def init_image_timestamps():
+    for name in image_list:
+        if name not in image_timestamps:
+            image_timestamps[name] = time.time()
+
 # === Button Handlers ===
 def handle_share():
     global sharing_active
@@ -266,5 +271,10 @@ degrader.start() #no07 specific
 threading.Thread(target=update_display_loop, daemon=True).start()
 
 print("🟢 Ready. Display off by default.")
+
+# no07, getting images for the first time to add timestamps
+get_images()
+init_image_timestamps()
+
 pause()
 
