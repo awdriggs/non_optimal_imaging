@@ -100,8 +100,9 @@ def capture_image(camera, camera_lock):
         print("average the sat and val")
 
         #Convert back to RGB
-        r, g, b = colorsys.hsv_to_rgb(avg_hue, avg_sat, avg_val)
-        r, g, b = int(r * 255), int(g * 255), int(b * 255)
+        # r, g, b = colorsys.hsv_to_rgb(avg_hue, avg_sat, avg_val)
+        # r, g, b = int(r * 255), int(g * 255), int(b * 255)
+        r, g, b = hsv_to_rgb_scalar(avg_hue, avg_sat, avg_val)
         print("convert back to rgb")
 
         print(f"🎨 Average Color: R={r} G={g} B={b}")
@@ -145,3 +146,25 @@ def rgb_to_hsv_np(frame):
     v = mx
     return h, s, v
 
+def hsv_to_rgb_scalar(h, s, v):
+    i = int(h * 6) % 6
+    f = (h * 6) - i
+    p = v * (1 - s)
+    q = v * (1 -f * s)
+    t = v * (1 - (1 - f) * s)
+
+    #output depending on color region
+    if i == 0:
+        r, g, b = v, t, p
+    elif i == 1:
+        r, g, b = q, v, p
+    elif i == 2:
+        r, g, b = p, v, t
+    elif i == 3:
+        r, g, b = p, q, v
+    elif i == 4:
+        r, g, b = t, p, v
+    else:
+        r, g, b = v, p, q
+
+    return int(r * 255), int(g * 255), int(b * 255)
