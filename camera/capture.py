@@ -73,18 +73,17 @@ def capture_image(camera, camera_lock):
         print(type(frame_fullres))
         print(frame_fullres.shape)
 
-        # convert form pil to np array
-        if not isinstance(frame_fullres, np.ndarray):
-            frame_fullres = np.array(frame_fullres)
+        small = np.array(Image.fromarray(frame_fullres).resize((160, 90)))
+
+        # # convert form pil to np array
+        # if not isinstance(frame_fullres, np.ndarray):
+        #     frame_fullres = np.array(frame_fullres)
 
         # convert to hsv and comput average
-        normed = frame_fullres / 255.0
-        r, g, b = normed[..., 0], normed[..., 1], normed[..., 2]
-        hsv = np.vectorize(colorsys.rgb_to_hsv)(r, g, b)
+        normed = small.astype(np.float32) / 255.0
+        h, s, v = rgb_to_hsv_np(normed)
         print("converted to hsv")
 
-        # Unpack HSV arrays
-        h, s, v = hsv
         h = h * 2 * np.pi # maps hue to an angle
         print("unpacked hsv")
          
@@ -116,4 +115,33 @@ def capture_image(camera, camera_lock):
 
         # === Restart Preview
         camera.start_preview()
+
+def rgb_to_hsv_np(frame):
+    """frame: H×W×3 float32 in [0,1]. Returns h,s,v each H×W in [0,1]."""
+    r, g, b = frame[...,0], frame[...,1], frame[...,2]
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    d  = mx - mn
+
+    # Hue
+    h = np.zeros_like(mx)
+    mask = d > 1e-6
+    # red max
+    idx = mask & (mx == r)
+    h[idx] = ((g[idx] - b[idx]) / d[idx]) % 6
+    # green max
+    idx = mask & (mx == g)
+    h[idx] = ((b[idx] - r[idx]) / d[idx]) + 2
+    # blue max
+    idx = mask & (mx == b)
+    h[idx] = ((r[idx] - g[idx]) / d[idx]) + 4
+    h /= 6.0
+
+    # Saturation
+    s = np.zeros_like(mx)
+    s[mask] = d[mask] / mx[mask]
+
+    # Value
+    v = mx
+    return h, s, v
 
