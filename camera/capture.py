@@ -5,6 +5,7 @@ import time
 from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
+#import colorsys # for hsv averaging
 
 SAVE_FULLRES = True  # Only saves fullres image if True
 
@@ -69,8 +70,41 @@ def capture_image(camera, camera_lock):
             print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
 
         # === Save Average Color (always fullres size)
-        average_color = np.mean(frame_fullres, axis=(0, 1)).astype(int)
-        r, g, b = average_color
+        print(type(frame_fullres))
+        print(frame_fullres.shape)
+
+        # convert form pil to np array
+        if not isinstance(frame_fullres, np.ndarray):
+            frame_fullres = np.array(frame_fullres)
+
+        # convert to hsv and comput average
+        normed = frame_fullres / 255.0
+        r, g, b = normed[..., 0], normed[..., 1], normed[..., 2]
+        hsv = np.vectorize(colorsys.rgb_to_hsv)(r, g, b)
+        print("converted to hsv")
+
+        # Unpack HSV arrays
+        h, s, v = hsv
+        h = h * 2 * np.pi # maps hue to an angle
+        print("unpacked hsv")
+         
+        #average hue as unit veoctrs
+        x = np.cos(h)
+        y = np.sin(h)
+        avg_hue = np.arctan2(np.mean(y), np.mean(x)) / (2 * np.pi)
+        avg_hue = avg_hue % 1.0 
+        print("average the hue")
+
+        #Average saturation and vlaue
+        avg_sat = np.mean(s)
+        avg_val = np.mean(v)
+        print("average the sat and val")
+
+        #Convert back to RGB
+        r, g, b = colorsys.hsv_to_rgb(avg_hue, avg_sat, avg_val)
+        r, g, b = int(r * 255), int(g * 255), int(b * 255)
+        print("convert back to rgb")
+
         print(f"🎨 Average Color: R={r} G={g} B={b}")
 
         width, height = frame_fullres.shape[1], frame_fullres.shape[0]
@@ -82,5 +116,4 @@ def capture_image(camera, camera_lock):
 
         # === Restart Preview
         camera.start_preview()
-
 
