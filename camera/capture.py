@@ -6,6 +6,9 @@ from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
 
+from push import send_image_to_server  # <--- for the exhibition, push to pi server 
+PUSH_TO_SERVER = True # toggle on/off for the display
+
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -48,7 +51,14 @@ def capture_image(camera, camera_lock):
         image.save(save_path)
         # camera.capture_and_save_image(save_path)
         print(f"✅ Saved: {save_path}")
+
         status_led.off()
+
+         # --- Conditionally push the image to the server ---
+        if PUSH_TO_SERVER:
+            send_image_to_server(save_path, CAMERA_NAME)
+        else:
+            print("   (Push to server is disabled)")
 
 
  
