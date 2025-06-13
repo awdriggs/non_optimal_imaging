@@ -11,6 +11,14 @@ SAVE_FULLRES = True  # Only saves fullres image if True
 
 CAMERA_NAME = "no01"
 
+# Setup paths
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+CAPTURES_DIR = FRONTEND_DIR / "captures"
+
+from push import send_image_to_server
+PUSH_TO_SERVER = True
+
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
     captures_dir = Path(__file__).resolve().parent / "frontend" / "captures"
@@ -116,6 +124,11 @@ def capture_image(camera, camera_lock):
 
         # === Restart Preview
         camera.start_preview()
+         
+        if PUSH_TO_SERVER:
+            send_image_to_server(avgcolor_path, CAMERA_NAME)
+        else:
+            print("push to server disabled")
 
 def rgb_to_hsv_np(frame):
     """frame: H×W×3 float32 in [0,1]. Returns h,s,v each H×W in [0,1]."""
