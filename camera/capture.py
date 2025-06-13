@@ -19,6 +19,12 @@ CAPTURES_DIR = FRONTEND_DIR / "captures"
 SAVE_FULLRES = True  # Only saves fullres image if True
 
 CAMERA_NAME = "no03"
+ 
+  
+from push import send_image_to_server
+PUSH_TO_SERVER = True 
+
+
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -117,3 +123,8 @@ def capture_image(camera, camera_lock):
         #         upscaled.save(CAPTURES_DIR / f"{CAMERA_NAME}-{down_name}_{up_name}.jpg")
 
         status_led.off()
+
+        if PUSH_TO_SERVER:
+            send_image_to_server(save_path, CAMERA_NAME)
+        else:
+            print("push to server disabed")
