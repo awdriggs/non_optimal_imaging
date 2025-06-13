@@ -93,7 +93,7 @@ def navigate_playback(direction):
     global playback_index
 
     if display_mode != "playback":
-        # Ignore navigation if not in playback mode
+        set_display_mode("playback") 
         return
 
     if not image_list:
@@ -178,6 +178,7 @@ def handle_up():
     global confirm_delete
 
     if display_mode != "playback":
+        set_display_mode("playback") 
         return
 
     # Don't allow delete if no real images
@@ -197,6 +198,7 @@ def handle_down():
     global confirm_delete
 
     if display_mode != "playback":
+        set_display_mode("playback") 
         return
 
     if confirm_delete:
