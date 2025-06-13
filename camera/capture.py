@@ -5,13 +5,16 @@ from pathlib import Path
 from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
+ 
+from push import send_image_to_server
+PUSH_TO_SERVER = True
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-CAMERA_NAME = "no00"
+CAMERA_NAME = "no04"
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -49,6 +52,11 @@ def capture_image(camera, camera_lock):
         # camera.capture_and_save_image(save_path)
         print(f"✅ Saved: {save_path}")
         status_led.off()
+
+        if PUSH_TO_SERVER:
+            send_image_to_server(save_path, CAMERA_NAME)
+        else:
+            print("push to server disabled")
 
 
  
