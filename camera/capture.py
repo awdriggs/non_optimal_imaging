@@ -13,6 +13,10 @@ CAPTURES_DIR = FRONTEND_DIR / "captures"
 
 CAMERA_NAME = "no07"
 
+from push import send_image_to_server
+PUSH_TO_SERVER = True 
+  
+
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
     captures_dir = Path(__file__).resolve().parent / "frontend" / "captures"
@@ -50,6 +54,11 @@ def capture_image(camera, camera_lock):
         # camera.capture_and_save_image(save_path)
         print(f"✅ Saved: {save_path}")
         status_led.off()
+
+        if PUSH_TO_SERVER:
+            send_image_to_server(save_path, CAMERA_NAME)
+        else:
+            print("push to server is disabled")
 
 
  
