@@ -6,7 +6,7 @@ from pathlib import Path
 # This is the address of your Pi 4 server.
 # Using .local requires Avahi/Bonjour to be working on your network.
 # If it fails, you may need to use the Pi 4's IP address directly.
-SERVER_URL = "http://nonopserver.local:3000/upload"
+SERVER_URL = "http://nonopserver.local:3000/api/upload"
 
 def send_image_to_server(image_path: Path, camera_id: str):
     """
