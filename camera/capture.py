@@ -7,7 +7,7 @@ from gpiozero import PWMLED
 from leds import status_led
  
 from push import send_image_to_server
-PUSH_TO_SERVER = True
+PUSH_TO_SERVER = False 
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
