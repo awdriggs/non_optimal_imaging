@@ -6,6 +6,9 @@ from camera import CameraController
 from gpiozero import PWMLED
 from leds import status_led
 
+from push import send_image_to_server  # <--- for the exhibition, push to pi server 
+PUSH_TO_SERVER = False # toggle on/off for the display
+
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
