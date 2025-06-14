@@ -19,11 +19,9 @@ CAPTURES_DIR = FRONTEND_DIR / "captures"
 SAVE_FULLRES = True  # Only saves fullres image if True
 
 CAMERA_NAME = "no03"
- 
   
 from push import send_image_to_server
-PUSH_TO_SERVER = True 
-
+PUSH_TO_SERVER = False 
 
 
 def generate_capture_filename(camera_name):
