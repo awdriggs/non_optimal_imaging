@@ -247,6 +247,7 @@ status_led.off()
 
 threading.Thread(target=update_display_loop, daemon=True).start()
 
-print("🟢 Ready. Display off by default.")
+print("Camera Ready")
+set_display_mode("preview")
 pause()
 

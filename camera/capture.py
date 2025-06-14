@@ -10,14 +10,13 @@ from leds import status_led
 SAVE_FULLRES = True  # Only saves fullres image if True
 
 CAMERA_NAME = "no01"
+from push import send_image_to_server  # <--- for the exhibition, push to pi server 
+PUSH_TO_SERVER = False # toggle on/off for the display
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
-
-from push import send_image_to_server
-PUSH_TO_SERVER = False 
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
