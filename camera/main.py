@@ -269,14 +269,14 @@ camera.start_preview()
 status_led.off()
 degrader.start() #no07 specific
 
-
 threading.Thread(target=update_display_loop, daemon=True).start()
-
-print("🟢 Ready. Display off by default.")
 
 # no07, getting images for the first time to add timestamps
 get_images()
 init_image_timestamps()
+
+print("Camera Ready")
+set_display_mode("preview")
 
 pause()
 
