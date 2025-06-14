@@ -18,7 +18,6 @@ CAPTURES_DIR = FRONTEND_DIR / "captures"
 SAVE_FULLRES = True  # Only saves fullres image if True
 
 CAMERA_NAME = "no02"
- 
   
 from push import send_image_to_server
 PUSH_TO_SERVER = True
