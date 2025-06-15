@@ -20,7 +20,7 @@ SAVE_FULLRES = True  # Only saves fullres image if True
 CAMERA_NAME = "no02"
   
 from push import send_image_to_server
-PUSH_TO_SERVER = True
+PUSH_TO_SERVER = False 
 
 def generate_capture_filename(camera_name):
     """Generate a sequential filename like 'no00-0001.jpg'."""
@@ -41,7 +41,7 @@ def generate_capture_filename(camera_name):
     filename = f"{camera_name}-{next_num:04d}.jpg"
     return filename
 
-def capture_image(camera, camera_lock):
+def capture_image(camera, camera_lock, display):
     print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
@@ -89,12 +89,17 @@ def capture_image(camera, camera_lock):
         image.save(save_path, format="JPEG", quality=jpeg_quality)
 
         print(f"✅ Saved: {save_path}")
+            
+        # display whatever was saved...
+        flash_capture = Image.open(save_path)
+        display.show_image(flash_capture)
+        time.sleep(2)
+   
         status_led.off()
-
-        # === Restart Preview
-        # camera.start_preview()
-         
+  
+         # --- Conditionally push the image to the server ---
         if PUSH_TO_SERVER:
             send_image_to_server(save_path, CAMERA_NAME)
-        else: 
-            print("push to server disabled")
+        else:
+            print("   (Push to server is disabled)")
+ 
