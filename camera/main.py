@@ -205,15 +205,29 @@ def handle_down():
         print("🟡 Delete cancelled")
 
 def handle_capture():
-    global button_ready #no04 necessary
+    global display_mode, previous_display_mode, button_ready #no04 necessary
+
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
     else:
         if button_ready and shake_active:
             # no04 triggers when shaked and button pressed 
             button_ready = False
-            capture_image(camera, camera_lock)
+
+            return_to_display_off = False # track whether you changed the display mode
+
+            # if in off mode, change to preivew, set flag to true 
+            if display_mode == "off":
+                set_display_mode("preview")
+                return_to_display_off = True 
+        
+            #catpure image, this will show the image for three seconds 
+            capture_image(camera, camera_lock, display)
             get_images()
+          
+            #if needed, switch back to the display being off 
+            if return_to_display_off:
+                set_display_mode("off")
 
 # n004 specific
 def handle_shake():
@@ -244,7 +258,6 @@ def reset_button():
     button_ready = True
 
 # button handler assignments
-
 capture_button.when_pressed = handle_capture
 preview_button.when_pressed = lambda: set_display_mode("preview")
 playback_button.when_pressed = lambda: set_display_mode("playback")
