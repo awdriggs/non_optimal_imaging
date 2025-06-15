@@ -114,21 +114,35 @@ def capture_image(camera, camera_lock, display):
 
         print(f"🎨 Average Color: R={r} G={g} B={b}")
 
-        width, height = frame_fullres.shape[1], frame_fullres.shape[0]
-        solid_color = Image.new("RGB", (width, height), color=(r, g, b))
-        solid_color.save(avgcolor_path)
+        try:
+            width, height = frame_fullres.shape[1], frame_fullres.shape[0]
+            solid_color = Image.new("RGB", (width, height), color=(r, g, b))
+            solid_color.save(avgcolor_path)
 
-        print(f"✅ Average color saved to {avgcolor_path}")
+            print(f"✅ Average color saved to {avgcolor_path}")
+
+            if avgcolor_path.stat().st_size == 0:
+                print("zero byte")
+                avgcolor_path.unlink(missing_ok=True)
+                status_led.off()
+                return None
+
+
  
-        # display whatever was saved...
-        flash_capture = Image.open(avgcolor_path)
-        display.show_image(flash_capture)
-        time.sleep(2)
+            # display whatever was saved...
+            flash_capture = Image.open(avgcolor_path)
+            display.show_image(flash_capture)
+            time.sleep(2)
+
+        except Exception as e:
+            print(f"Capture failed: {e}")
+            status_led.off()
+            return None
 
         status_led.off()
 
         # === Restart Preview
-        camera.start_preview()
+        # camera.start_preview()
          
          # --- Conditionally push the image to the server ---
         if PUSH_TO_SERVER:
