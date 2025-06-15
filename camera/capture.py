@@ -71,29 +71,39 @@ def capture_image(camera, camera_lock, display):
         camera.picam2.start()
         time.sleep(0.5)
 
-        # Get image from camera
-        array = camera.capture_image_array()
+        try:
+            # Get image from camera
+            array = camera.capture_image_array()
 
-        # === Save Fullres if enabled
-        if SAVE_FULLRES:
-            Image.fromarray(array).save(fullres_path)
-            print(f"✅ Fullres saved to {fullres_path}")
-        else:
-            print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
+            # === Save Fullres if enabled
+            if SAVE_FULLRES:
+                Image.fromarray(array).save(fullres_path)
+                print(f"✅ Fullres saved to {fullres_path}")
+            else:
+                print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
 
-        # Get random JPEG quality between 1 and 20
-        jpeg_quality = random.randint(1, 5)
-        print(f"🧪 JPEG Quality selected: {jpeg_quality}")
+            # Get random JPEG quality between 1 and 20
+            jpeg_quality = random.randint(1, 5)
+            print(f"🧪 JPEG Quality selected: {jpeg_quality}")
 
-        image = Image.fromarray(array)
-        image.save(save_path, format="JPEG", quality=jpeg_quality)
+            image = Image.fromarray(array)
+            image.save(save_path, format="JPEG", quality=jpeg_quality)
+                         
+            if save_path.stat().st_size == 0:
+                print("zero byte")
+                save_path.unlink(missing_ok=True)
+                status_led.off()
+                return None
+          
+            # display whatever was saved...
+            flash_capture = Image.open(save_path)
+            display.show_image(flash_capture)
+            time.sleep(2)
 
-        print(f"✅ Saved: {save_path}")
-            
-        # display whatever was saved...
-        flash_capture = Image.open(save_path)
-        display.show_image(flash_capture)
-        time.sleep(2)
+        except Exception as e:
+            print(f"Capture failed: {e}")
+            satus_led.off()
+            return None
    
         status_led.off()
   
