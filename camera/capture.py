@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 CAPTURES_DIR = FRONTEND_DIR / "captures"
 
-SAVE_FULLRES = True  # Only saves fullres image if True
+SAVE_FULLRES = False # Only saves fullres image if True
 
 CAMERA_NAME = "no06"
 
