@@ -203,7 +203,7 @@ def handle_down():
 
 
 def handle_capture():
-    global tilted
+    global tilted, display_mode, previous_display_mode
 
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
@@ -211,7 +211,20 @@ def handle_capture():
         # test to see the status of tilt here 
         if tilted == True:
             print("tilted!")
-            capture_image(camera, camera_lock)
+            return_to_display_off = False # track whether you changed the display mode
+            # if in off mode, change to preivew, set flag to true 
+            if display_mode == "off":
+                set_display_mode("preview")
+                return_to_display_off = True 
+        
+            #catpure image, this will show the image for three seconds 
+            capture_image(camera, camera_lock, display)
+            get_images()
+          
+            #if needed, switch back to the display being off 
+            if return_to_display_off:
+                set_display_mode("off")
+            
             get_images()
 
 def handle_tilt():
