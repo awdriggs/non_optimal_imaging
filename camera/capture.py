@@ -74,58 +74,44 @@ def capture_image(camera, camera_lock, display):
         camera.picam2.start()
         time.sleep(0.5)
 
-        # Get image from camera
-        array = camera.capture_image_array()
+        try:
+            # Get image from camera
+            array = camera.capture_image_array()
 
-        # === Save Fullres if enabled
-        if SAVE_FULLRES:
-            Image.fromarray(array).save(fullres_path)
-            print(f"✅ Fullres saved to {fullres_path}")
-        else:
-            print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
+            # === Save Fullres if enabled
+            if SAVE_FULLRES:
+                Image.fromarray(array).save(fullres_path)
+                print(f"✅ Fullres saved to {fullres_path}")
+            else:
+                print("⚡ Fullres saving skipped (SAVE_FULLRES=False)")
 
 
-        # original
-        # rescale code goes here...
-        image = Image.fromarray(array)
+            # original
+            # rescale code goes here...
+            image = Image.fromarray(array)
 
-        downscaled = image.resize((6, 4), Image.NEAREST) #1.5 ratio
-        # also try 10 and 6, 1.6 ratio
-        upscaled = downscaled.resize(UPSCALED_SIZE, resample=Image.BICUBIC)
-        upscaled.save(save_path)
-        print(f"✅ Low-res upscaled saved to {save_path}")
+            downscaled = image.resize((6, 4), Image.NEAREST) #1.5 ratio
+            # also try 10 and 6, 1.6 ratio
+            upscaled = downscaled.resize(UPSCALED_SIZE, resample=Image.BICUBIC)
+            upscaled.save(save_path)
+            print(f"✅ Low-res upscaled saved to {save_path}")
+             
+            if save_path.stat().st_size == 0:
+                print("zero byte")
+                save_path.unlink(missing_ok=True)
+                status_led.off()
+                return None
+          
+            print(f"✅ Saved: {save_path}")
+            # display whatever was saved...
+            flash_capture = Image.open(save_path)
+            display.show_image(flash_capture)
+            time.sleep(2)
 
-        ## test output all sampling algorithm combinations
-        ## Downsample to 6×2 (low-res)
-        # down_size = (6, 2)
-
-        # # Get original size before any downsampling
-        # original_size = UPSCALED_SIZE
-
-        # # All available filters
-        # filters = {
-        #     "NEAREST": Image.NEAREST,
-        #     "BOX": Image.BOX,
-        #     "BILINEAR": Image.BILINEAR,
-        #     "HAMMING": Image.HAMMING,
-        #     "BICUBIC": Image.BICUBIC,
-        #     "LANCZOS": Image.LANCZOS,
-        # }
-
-        # # Apply all combinations
-        # for down_name, down_filter in filters.items():
-        #     for up_name, up_filter in filters.items():
-        #         downscaled = image.resize(down_size, resample=down_filter)
-        #         upscaled = downscaled.resize(original_size, resample=up_filter)
-        #         upscaled.save(CAPTURES_DIR / f"{CAMERA_NAME}-{down_name}_{up_name}.jpg")
-
-        # camera.capture_and_save_image(save_path)
-        print(f"✅ Saved: {save_path}")
-            
-        # display whatever was saved...
-        flash_capture = Image.open(save_path)
-        display.show_image(flash_capture)
-        time.sleep(2)
+        except Exception as e:
+            print(f"Capture failed: {e}")
+            status_led.off()
+            return None
    
         status_led.off()
   
