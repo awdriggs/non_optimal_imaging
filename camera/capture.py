@@ -37,7 +37,7 @@ def generate_capture_filename(camera_name):
     filename = f"{camera_name}-{next_num:04d}.jpg"
     return filename
 
-def capture_image(camera, camera_lock):
+def capture_image(camera, camera_lock, display):
     print("📸 Capturing Fullres and Average Color...")
 
     with camera_lock:
@@ -119,11 +119,18 @@ def capture_image(camera, camera_lock):
         solid_color.save(avgcolor_path)
 
         print(f"✅ Average color saved to {avgcolor_path}")
+ 
+        # display whatever was saved...
+        flash_capture = Image.open(avgcolor_path)
+        display.show_image(flash_capture)
+        time.sleep(2)
+
         status_led.off()
 
         # === Restart Preview
         camera.start_preview()
          
+         # --- Conditionally push the image to the server ---
         if PUSH_TO_SERVER:
             send_image_to_server(avgcolor_path, CAMERA_NAME)
         else:
@@ -180,3 +187,4 @@ def hsv_to_rgb_scalar(h, s, v):
         r, g, b = v, p, q
 
     return int(r * 255), int(g * 255), int(b * 255)
+ 
