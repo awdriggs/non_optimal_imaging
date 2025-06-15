@@ -48,17 +48,29 @@ def capture_image(camera, camera_lock, display):
         filename = generate_capture_filename(CAMERA_NAME)
         save_path = CAPTURES_DIR / filename
 
-        # Get image from camera
-        array = camera.capture_image_array()
-        image = Image.fromarray(array)
-        image.save(save_path)
-        # camera.capture_and_save_image(save_path)
-        print(f"✅ Saved: {save_path}")
-            
-        # display whatever was saved...
-        flash_capture = Image.open(save_path)
-        display.show_image(flash_capture)
-        time.sleep(2)
+        try:
+            # Get image from camera
+            array = camera.capture_image_array()
+            image = Image.fromarray(array)
+            image.save(save_path)
+             
+            if save_path.stat().st_size == 0:
+                print("zero byte")
+                save_path.unlink(missing_ok=True)
+                status_led.off()
+                return None
+
+          
+            print(f"✅ Saved: {save_path}")
+            # display whatever was saved...
+            flash_capture = Image.open(save_path)
+            display.show_image(flash_capture)
+            time.sleep(2)
+
+        except Exception as e:
+            print(f"Capture failed: {e}")
+            satus_led.off()
+            return None
    
         status_led.off()
   
