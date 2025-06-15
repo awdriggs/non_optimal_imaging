@@ -198,7 +198,7 @@ def handle_capture():
     if get_display_mode() == "playback":
         set_display_mode(get_previous_display_mode())
     else:
-        capture_image(camera, camera_lock)
+        capture_image(camera, camera_lock, display)
         get_images()
 
 capture_button.when_pressed = handle_capture
