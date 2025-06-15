@@ -53,22 +53,17 @@ def capture_image(camera, camera_lock, display):
         image.save(save_path)
         # camera.capture_and_save_image(save_path)
         print(f"✅ Saved: {save_path}")
-
+            
         # display whatever was saved...
         flash_capture = Image.open(save_path)
         display.show_image(flash_capture)
-        time.sleep(3)
-
+        time.sleep(2)
    
         status_led.off()
-
- 
   
          # --- Conditionally push the image to the server ---
         if PUSH_TO_SERVER:
             send_image_to_server(save_path, CAMERA_NAME)
         else:
             print("   (Push to server is disabled)")
-
-
  
