@@ -69,7 +69,7 @@ def capture_image(camera, camera_lock, display):
 
         except Exception as e:
             print(f"Capture failed: {e}")
-            satus_led.off()
+            status_led.off()
             return None
    
         status_led.off()
