@@ -41,10 +41,11 @@ class CameraController:
             self.current_config = "capture"
             # print("📷 Capture config:", self.picam2.camera_config)
 
-        # time.sleep(0.5)
-        for _ in range(1): #flush stale frames
-            self.picam2.capture_array("main")
+        # time.sleep(0.2)
+        # for _ in range(3): #flush stale frames
+        #     self.picam2.capture_array("main")
 
+        time.sleep(0.2)
 
         image_array = self.picam2.capture_array("main")
         # time.sleep(3)
