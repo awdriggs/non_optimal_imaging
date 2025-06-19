@@ -37,8 +37,11 @@ def brownian_walk_effect(array, hit_ratio=0.3):
     visited = set()
     x, y = width // 2, height // 2
     while len(visited) < hit_ratio * total_pixels:
-        visited.add((x, y))
-        arr[y, x] = [random.randint(0, 255) for _ in range(3)]
+        for dx in range(-5, 5):
+            for dy in range(-5, 5):
+                nx, ny = np.clip(x + dx, 0, width - 1), np.clip(y + dy, 0, height - 1)
+                visited.add((nx, ny))
+                arr[ny, nx] = [random.randint(0, 255) for _ in range(3)]
         dx, dy = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
         x = np.clip(x + dx, 0, width - 1)
         y = np.clip(y + dy, 0, height - 1)
