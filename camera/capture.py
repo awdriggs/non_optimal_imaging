@@ -30,17 +30,14 @@ def generate_capture_filename(camera_name):
     filename = f"{camera_name}-{next_num:04d}.jpg"
     return filename
 
-def brownian_walk_effect(array, hit_ratio=0.3):
+def brownian_walk_effect(array, steps=3000):
     arr = array.copy()
     height, width, _ = arr.shape
-    total_pixels = height * width
-    visited = set()
     x, y = width // 2, height // 2
-    while len(visited) < hit_ratio * total_pixels:
+    for _ in range(steps):
         for dx in range(-5, 5):
             for dy in range(-5, 5):
                 nx, ny = np.clip(x + dx, 0, width - 1), np.clip(y + dy, 0, height - 1)
-                visited.add((nx, ny))
                 arr[ny, nx] = [random.randint(0, 255) for _ in range(3)]
         dx, dy = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
         x = np.clip(x + dx, 0, width - 1)
