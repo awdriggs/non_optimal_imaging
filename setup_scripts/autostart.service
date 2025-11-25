@@ -1,0 +1,14 @@
+# /etc/systemd/system/nonoptimal.service
+[Unit]
+Description=Non-Optimal Imaging Camera
+After=default.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/awd/non_optimal_imaging/camera/main.py
+WorkingDirectory=/home/awd/non_optimal_imaging/camera
+Restart=always
+User=awd
+
+[Install]
+WantedBy=multi-user.target
+
